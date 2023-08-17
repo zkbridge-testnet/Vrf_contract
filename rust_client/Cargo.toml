@@ -1,0 +1,32 @@
+[package]
+name = "rust_vrf_lib"
+version = "0.1.0"
+authors = ["author@example.com"]
+edition = "2021"
+
+# Existing dependencies
+[dependencies]
+sha3 = "*"
+secp256k1 = {version = "0.27.0", features = ["rand-std", "global-context"]}
+rand = "0.8"
+criterion = "0.3"
+hex = "0.4.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4.19"
+env_logger = "0.10.0"
+
+# gRPC and related dependencies
+tonic = "0.9"
+prost = "0.11"
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+
+[[bin]]
+name = "client"
+path = "src/client.rs"
+
+tonic = "0.5"
+prost = "0.9"
+
+[build-dependencies]
+tonic-build = "0.9"
