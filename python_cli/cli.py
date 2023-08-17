@@ -80,6 +80,12 @@ def verify(application_public_key, message_hash, signature, expected_random):
     signed_txn = w3.eth.account.signTransaction(txn, PRIVATE_KEY)
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
     receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+
+    # looking for error in receipt
+    if receipt['status'] == 0:
+        logging.error("Transaction failed: %s", receipt['gasUsed'])
+        return
+
     logging.info("Transaction receipt: %s", receipt)
 
 def gen_rand_verify(application_address):
