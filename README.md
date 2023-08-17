@@ -29,6 +29,8 @@ The deployment uses `truffle`, we deploy our contracts by using following comman
 truffle migrate --network opbnbTestnet
 ```
 
+After you successfully deployed, you need to update corresponding `config.ini` entries.
+
 ## Rust VRF client
 
 The rust VRF client serves as a backend to Python CLI interface, you need to compile it by using the `build.sh` file in the project root directory.
