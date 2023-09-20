@@ -95,7 +95,7 @@ ubuntu@ip-172-31-1-22:~/vrf_contracts/python_cli$ python3 cli.py generate_random
 ...'transactionHash': HexBytes('0x1c10431afa4a30d3c5a4dd2d504dc4251e444e227b85284f7003818969537a90')...
 ```
 
-You can lookup our example transaction on https://opbnbscan.com/.
+You can lookup our example transaction on [https://opbnbscan.com/.](https://testnet.opbnbscan.com/tx/0x1c10431afa4a30d3c5a4dd2d504dc4251e444e227b85284f7003818969537a90)https://testnet.opbnbscan.com/tx/0x1c10431afa4a30d3c5a4dd2d504dc4251e444e227b85284f7003818969537a90  
 ## License
 
 This project is licensed under the MIT License.
