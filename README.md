@@ -96,6 +96,8 @@ ubuntu@ip-172-31-1-22:~/vrf_contracts/python_cli$ python3 cli.py generate_random
 ```
 
 You can lookup our example transaction on https://testnet.opbnbscan.com/tx/0x88cebd568052edecfac593f85dab92e46455b041146339b30dea39f91a97de34
+
+You can get the random number by checking the event log.
 ## License
 
 This project is licensed under the MIT License.
