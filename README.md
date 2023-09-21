@@ -26,6 +26,7 @@ This will generate the ABI files in the `output/` directory.
 
 The deployment uses `truffle`, we deploy our contracts by using following command:
 ```bash
+npm install @truffle/hdwallet-provider
 truffle migrate --network opbnbTestnet
 ```
 
