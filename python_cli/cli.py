@@ -99,7 +99,7 @@ def verify(application_public_key, message_hash, signature, expected_random, rec
     signature_bytes = bytes.fromhex(signature)
     expected_random_bytes = bytes.fromhex(expected_random)
     nonce = w3.eth.getTransactionCount(Account.privateKeyToAccount(PRIVATE_KEY).address)
-    recovery_id_uint8 = int(recovery_id)
+    recovery_id_uint8 = int(recovery_id) + 27
     txn = contract.functions.verify(application_public_key_bytes, msg_hash_bytes, signature_bytes, recovery_id_uint8, expected_random_bytes).buildTransaction({
         'chainId': CHAIN_ID,  # Adjust accordingly based on network
         'gas': 2000000,

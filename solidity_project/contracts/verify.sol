@@ -39,9 +39,6 @@ contract Verify {
             applicationAddress
         );
         address signer = recoverSigner(messageHash, signature, v);
-        if (signer == address(0)) {
-            return false;
-        }
         require(
             signer == publicKeyToAddress(registeredKey),
             "Invalid signature"
@@ -68,7 +65,7 @@ contract Verify {
         bytes32 messageHash,
         bytes memory sig,
         uint8 v
-    ) internal returns (address) {
+    ) internal pure returns (address) {
         (bytes32 r, bytes32 s) = splitSignature(sig);
         return ecrecover(messageHash, v, r, s);
     }
@@ -91,12 +88,10 @@ contract Verify {
             // ecrecover takes the signature parameters, and the only way to get them
             // currently is to use assembly.
             // solhint-disable-next-line no-inline-assembly
-            bytes32 yParityAndS;
             assembly {
                 r := mload(add(sig, 0x20))
-                yParityAndS := mload(add(sig, 0x40))
+                s := mload(add(sig, 0x40))
             }
-            s = yParityAndS & 0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         } else {
             revert("ECDSA: invalid signature length");
         }
