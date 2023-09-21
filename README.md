@@ -83,18 +83,18 @@ ubuntu@ip-172-31-1-22:~/vrf_contracts$ cd python_cli/
 
 
 ubuntu@ip-172-31-1-22:~/vrf_contracts/python_cli$ python3 cli.py register
-2023-08-17 03:24:39,236 - INFO - Public key: 795ad30f126d8a82804c3e4025eb72cfe8f3af6d40dd2608f6ff98e9870740af6c6b995f4a329099506d396f6301fb54fbcc63cd7bc47fa86202db5f883c0a43
+2023-09-21 13:37:32,201 - INFO - Public key: 795ad30f126d8a82804c3e4025eb72cfe8f3af6d40dd2608f6ff98e9870740af6c6b995f4a329099506d396f6301fb54fbcc63cd7bc47fa86202db5f883c0a43
 (Receipt edited to simplify the document)
-... 'transactionHash': HexBytes('0xa5758643548965da94ea1ee3b58dc085d59a88f663568ff5646a7dcad6eb6477'), ...
+... 'transactionHash': HexBytes('0x200c7001db401f69aae3ae51e9436862dbf9e703b3d39b4756bcb27f2cde6198'), ...
 
 
 ubuntu@ip-172-31-1-22:~/vrf_contracts/python_cli$ python3 cli.py generate_random_and_verify 3c9c23B661a0368cb3306B64Ab6Cf0C72d76f35B
-2023-08-17 03:25:04,614 - INFO - Registered public key: 795ad30f126d8a82804c3e4025eb72cfe8f3af6d40dd2608f6ff98e9870740af6c6b995f4a329099506d396f6301fb54fbcc63cd7bc47fa86202db5f883c0a43
+2023-09-21 13:38:58,920 - INFO - Registered public key: 795ad30f126d8a82804c3e4025eb72cfe8f3af6d40dd2608f6ff98e9870740af6c6b995f4a329099506d396f6301fb54fbcc63cd7bc47fa86202db5f883c0a43
 (Receipt edited to simplify the document)
-...'transactionHash': HexBytes('0x0251894239190011e94a32fa2d770e6af250f1c22bb6180bc1f3b8cc75d0488d')...
+...'transactionHash': HexBytes('0xd1ad936ffcfec762546c6d18f4467d259ecf93d287d313d35c497a679960e3a3')...
 ```
 
-You can lookup our example transaction on https://opbnbscan.com/.
+You can lookup our example transaction on https://testnet.opbnbscan.com/tx/0xd1ad936ffcfec762546c6d18f4467d259ecf93d287d313d35c497a679960e3a3
 ## License
 
 This project is licensed under the MIT License.

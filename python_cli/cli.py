@@ -18,10 +18,13 @@ with open(config['CONTRACTS']['VerifyABI'], 'r') as f:
 REGISTER_ADDRESS = config['CONTRACTS']['RegisterAddress']
 VERIFY_ADDRESS = config['CONTRACTS']['VerifyAddress']
 PRIVATE_KEY = config["PRIVATE"]["Key"]
+CHAIN_ID = int(config['WEB3']['ChainID'])
 if not PRIVATE_KEY:
     logging.error("Private key not found in config.ini.")
 
 vrfClient = config['VRF']['Client']
+
+
 
 def register():
     # Get public key from VRF client
@@ -31,13 +34,38 @@ def register():
     if public_key.startswith('0x'):
         public_key = public_key[2:]
     # remove 04 from the beginning of the public key
+    logging.info("VRF Public key for local verification: %s", public_key)
     public_key = public_key[2:]
     logging.info("VRF Public key: %s", public_key)
     public_key = bytes.fromhex(public_key)
     contract = w3.eth.contract(address=REGISTER_ADDRESS, abi=REGISTER_ABI)
     nonce = w3.eth.getTransactionCount(Account.privateKeyToAccount(PRIVATE_KEY).address)
+    print(nonce, contract, public_key)
     txn = contract.functions.register(public_key).buildTransaction({
-        'chainId': 5611,  # Adjust accordingly based on network
+        'chainId': CHAIN_ID,  # Adjust accordingly based on network
+        'gas': 2000000,
+        'gasPrice': w3.toWei('2', 'gwei'),
+        'nonce': nonce,
+    })
+    signed_txn = w3.eth.account.signTransaction(txn, PRIVATE_KEY)
+    tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+    receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+    logging.info("Transaction receipt: %s", receipt)
+
+def register_with_pubkey(public_key):
+    # convert public key into hex
+    if public_key.startswith('0x'):
+        public_key = public_key[2:]
+    # remove 04 from the beginning of the public key
+    logging.info("VRF Public key for local verification: %s", public_key)
+    public_key = public_key[2:]
+    logging.info("VRF Public key: %s", public_key)
+    public_key = bytes.fromhex(public_key)
+    contract = w3.eth.contract(address=REGISTER_ADDRESS, abi=REGISTER_ABI)
+    nonce = w3.eth.getTransactionCount(Account.privateKeyToAccount(PRIVATE_KEY).address)
+    print(nonce, contract, public_key)
+    txn = contract.functions.register(public_key).buildTransaction({
+        'chainId': CHAIN_ID,  # Adjust accordingly based on network
         'gas': 2000000,
         'gasPrice': w3.toWei('2', 'gwei'),
         'nonce': nonce,
@@ -56,7 +84,7 @@ def get_public_key(address):
     logging.info("Registered public key: %s", public_key)
     return public_key
 
-def verify(application_public_key, message_hash, signature, expected_random):
+def verify(application_public_key, message_hash, signature, expected_random, recovery_id):
     contract = w3.eth.contract(address=VERIFY_ADDRESS, abi=VERIFY_ABI)
     if application_public_key.startswith('0x'):
         application_public_key = application_public_key[2:]
@@ -71,8 +99,9 @@ def verify(application_public_key, message_hash, signature, expected_random):
     signature_bytes = bytes.fromhex(signature)
     expected_random_bytes = bytes.fromhex(expected_random)
     nonce = w3.eth.getTransactionCount(Account.privateKeyToAccount(PRIVATE_KEY).address)
-    txn = contract.functions.verify(application_public_key_bytes, msg_hash_bytes, signature_bytes, expected_random_bytes).buildTransaction({
-        'chainId': 5611,  # Adjust accordingly based on network
+    recovery_id_uint8 = int(recovery_id)
+    txn = contract.functions.verify(application_public_key_bytes, msg_hash_bytes, signature_bytes, recovery_id_uint8, expected_random_bytes).buildTransaction({
+        'chainId': CHAIN_ID,  # Adjust accordingly based on network
         'gas': 2000000,
         'gasPrice': w3.toWei('2', 'gwei'),
         'nonce': nonce,
@@ -80,13 +109,13 @@ def verify(application_public_key, message_hash, signature, expected_random):
     signed_txn = w3.eth.account.signTransaction(txn, PRIVATE_KEY)
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
     receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+    logging.info("Transaction receipt: %s", receipt)
 
     # looking for error in receipt
     if receipt['status'] == 0:
         logging.error("Transaction failed: %s", receipt['gasUsed'])
         return
 
-    logging.info("Transaction receipt: %s", receipt)
 
 def gen_rand_verify(application_address):
     # query contract to get public key
@@ -103,9 +132,33 @@ def gen_rand_verify(application_address):
     random_number = random_number_lines[0]
     proof_msg = random_number_lines[1]
     proof_sig = random_number_lines[2]
+    recovery_id = random_number_lines[3]
 
     # onchain
-    verify(application_address, proof_msg, proof_sig, random_number)
+    verify(application_address, proof_msg, proof_sig, random_number, recovery_id)
+
+    logging.info("Random number: %s", random_number)
+
+def gen_rand_with_msg_verify(application_address, message):
+    # query contract to get public key
+    application_public_key = get_public_key(application_address)
+    # add 04 to the beginning of the public key
+    if application_public_key.startswith('0x'):
+        application_public_key = application_public_key[2:]
+    if len(application_public_key) == 128:
+        application_public_key = '04' + application_public_key
+    # invoke client to get random number
+    random_number_line = os.popen(vrfClient + ' getrandwithmsg ' + application_public_key + ' ' + message).read()
+    random_number_lines = random_number_line.split('\n')
+    print(random_number_lines)
+    random_number = random_number_lines[0]
+    proof_msg = random_number_lines[1]
+    proof_sig = random_number_lines[2]
+    recovery_id = random_number_lines[3]
+    
+
+    # onchain
+    verify(application_address, proof_msg, proof_sig, random_number, recovery_id)
 
     logging.info("Random number: %s", random_number)
 
@@ -114,6 +167,8 @@ def main():
     subparsers = parser.add_subparsers(dest='command')
 
     parser_register = subparsers.add_parser('register', help='Register a secp256k1 public key against your Ethereum address.')
+    parser_register_with_pubkey = subparsers.add_parser('register_with_pubkey', help='Register a secp256k1 public key against your Ethereum address.')
+    parser_register_with_pubkey.add_argument('public_key', type=str, help='Public key to be registered.')
     
     parser_getkey = subparsers.add_parser('getkey', help='Retrieve the registered public key for a specific Ethereum address.')
     parser_getkey.add_argument('address', type=str, help='Ethereum address to retrieve the public key for.')
@@ -127,16 +182,24 @@ def main():
     parser_generate_random_and_verify = subparsers.add_parser('generate_random_and_verify', help='Generate a random number and verify it, random number will be posted on chain.')
     parser_generate_random_and_verify.add_argument('application_deployer_address', type=str, help='Public key of the application.')
 
+    parser_generate_random_with_msg_and_verify = subparsers.add_parser('generate_random_with_msg_and_verify', help='Generate a random number and verify it, random number will be posted on chain.')
+    parser_generate_random_with_msg_and_verify.add_argument('application_deployer_address', type=str, help='Public key of the application.')
+    parser_generate_random_with_msg_and_verify.add_argument('message', type=str, help='Message to be signed.')
+
 
     args = parser.parse_args()
     if args.command == 'register':
         register()
+    elif args.command == 'register_with_pubkey':
+        register_with_pubkey(args.public_key)
     elif args.command == 'getkey':
         get_public_key(args.address)
     elif args.command == 'verify':
         verify(args.application_public_key, args.message_hash, args.signature, args.expected_random)
     elif args.command == 'generate_random_and_verify':
         gen_rand_verify(args.application_deployer_address)
+    elif args.command == 'generate_random_with_msg_and_verify':
+        gen_rand_with_msg_verify(args.application_deployer_address, args.message)
     else:
         logging.error("Invalid command")
 

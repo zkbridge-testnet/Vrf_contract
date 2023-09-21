@@ -69,7 +69,33 @@ module.exports = {
       skipDryRun: false,     // Skip dry run before migrations
       gasPrice: 200000000, // 0.2 Gwei, adjust as necessary
       from: "0x3c9c23B661a0368cb3306B64Ab6Cf0C72d76f35B"  // Your Ethereum address used for deployments
-    }
+    },
+
+    sepolia: {
+      provider: function () {
+        const HDWalletProvider = require('@truffle/hdwallet-provider');
+        return new HDWalletProvider("9c26634333481f42cfd8eb81b0c0f7c12839b2af3aa4d293c890762312b42ec8", "https://ethereum-sepolia.blockpi.network/v1/rpc/public");
+      },
+      network_id: 11155111, // Sepolia's network ID
+      gas: 4000000, // Adjust the gas limit as per your requirements
+      gasPrice: 10000000000, // Set the gas price to an appropriate value
+      confirmations: 0, // Set the number of confirmations needed for a transaction
+      timeoutBlocks: 200, // Set the timeout for transactions
+      skipDryRun: true // Skip the dry run option
+     },
+
+     local: {
+      provider: function () {
+        const HDWalletProvider = require('@truffle/hdwallet-provider');
+        return new HDWalletProvider("7fd40c57db3625c1820e235420f5712dcea04c33faddb2e5e6cdbb701caf8a03", "http://192.168.244.129:7545");
+      },
+      network_id: 5777, // Sepolia's network ID
+      gas: 4000000, // Adjust the gas limit as per your requirements
+      gasPrice: 10000000000, // Set the gas price to an appropriate value
+      confirmations: 0, // Set the number of confirmations needed for a transaction
+      timeoutBlocks: 200, // Set the timeout for transactions
+      skipDryRun: true // Skip the dry run option
+     }
 
 
 

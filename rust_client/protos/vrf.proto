@@ -6,10 +6,14 @@ package vrf;
 service VrfService {
     rpc GenerateKeys (Empty) returns (PublicKey);
     rpc GenerateRandomNumber (PublicKey) returns (RandomNumberResponse);
+    rpc GenerateRandomNumberWithInputMsg (PublicKeyWithInput) returns (RandomNumberResponse);
 }
 
 message Empty {}
-
+message PublicKeyWithInput{
+    bytes key = 1;
+    bytes msg = 2;
+}
 message PublicKey {
     bytes data = 1;
 }
@@ -18,4 +22,5 @@ message RandomNumberResponse {
     bytes random_number = 1;
     bytes proof_msg = 2;
     bytes proof_sig = 3;
+    bytes recovery_id = 4;
 }

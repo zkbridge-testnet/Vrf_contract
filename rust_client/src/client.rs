@@ -12,6 +12,8 @@ use secp256k1::{PublicKey as secpPublicKey, ecdsa::Signature, Message};
 
 use sha3::{{Keccak256, Digest}};
 
+use crate::vrf::PublicKeyWithInput;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {{
     let args : Vec<String> = env::args().collect();
@@ -54,12 +56,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {{
         let random_number_data = response_data.random_number;
         let proof_msg = response_data.proof_msg;
         let proof_sig_byte = response_data.proof_sig;
+        let recovery_id = response_data.recovery_id[0];
 
-        let proof_sig = Signature::from_compact(&proof_sig_byte.clone())?;
+        let mut proof_sig = Signature::from_compact(&proof_sig_byte.clone())?;
+        proof_sig.normalize_s();
 
         println!("{}", hex::encode(random_number_data.clone()));
         println!("{}", hex::encode(proof_msg.clone()));
         println!("{}", hex::encode(proof_sig.clone().serialize_compact()));
+        println!("{}", recovery_id);
+    } else if mode.eq_ignore_ascii_case("getrandwithmsg") {
+        let public_key_str = args[2].clone();
+        let public_key_data = hex::decode(public_key_str.clone()).unwrap();
+        let msg_str = args[3].clone();
+        let msg_data = hex::decode(msg_str.clone()).unwrap();
+        // Request a random number using the received public key
+        let random_number_response = client.generate_random_number_with_input_msg( PublicKeyWithInput { key: public_key_data , msg: msg_data}).await?;
+        let response_data = random_number_response.into_inner();
+        let random_number_data = response_data.random_number;
+        let proof_msg = response_data.proof_msg;
+        let proof_sig_byte = response_data.proof_sig;
+        let recovery_id = response_data.recovery_id[0];
+
+        let mut proof_sig = Signature::from_compact(&proof_sig_byte.clone())?;
+        proof_sig.normalize_s();
+
+
+        println!("{}", hex::encode(random_number_data.clone()));
+        println!("{}", hex::encode(proof_msg.clone()));
+        println!("{}", hex::encode(proof_sig.clone().serialize_compact()));
+        println!("{}", recovery_id);
     } else {
         panic!("Invalid mode: {}", mode);
     }
