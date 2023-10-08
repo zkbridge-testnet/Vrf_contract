@@ -15,6 +15,7 @@ contract Verify {
     event LogBytes(bytes message);
     event Loguint8(uint8 message);
     event Logbytes32(bytes32 message);
+    event Committeed(bytes32 messageHash, address applicationAddress);
     mapping(bytes => bool) public committedHashes;
 
     function commit(
@@ -26,6 +27,7 @@ contract Verify {
             "Hash already committed"
         );
         committedHashes[abi.encodePacked(messageHash, applicationAddress)] = true;
+        emit Committeed(messageHash, applicationAddress);
         return true;
     }
 
