@@ -33,21 +33,21 @@ contract Verify {
 
     function batchVerify(
         address applicationAddress,
-        bytes32[] memory RandomSeedes,
+        bytes32[] memory RandomSeeds,
         bytes[] memory signatures,
         uint8[] memory v,
         bytes32[] memory expectedRandoms
     ) external returns (bool) {
         require(
-            RandomSeedes.length == signatures.length &&
+            RandomSeeds.length == signatures.length &&
             signatures.length == v.length &&
             v.length == expectedRandoms.length,
             "Invalid input"
         );
-        for (uint256 i = 0; i < RandomSeedes.length; i++) {
+        for (uint256 i = 0; i < RandomSeeds.length; i++) {
             verify(
                 applicationAddress,
-                RandomSeedes[i],
+                RandomSeeds[i],
                 signatures[i],
                 v[i],
                 expectedRandoms[i]
