@@ -58,7 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {{
         let proof_sig_byte = response_data.proof_sig;
         let recovery_id = response_data.recovery_id[0];
 
-        let mut proof_sig = Signature::from_compact(&proof_sig_byte.clone())?;
+        let proof_sig = Signature::from_compact(&proof_sig_byte.clone())?;
 
         println!("{}", hex::encode(random_number_data.clone()));
         println!("{}", hex::encode(proof_msg.clone()));
@@ -77,7 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {{
         let proof_sig_byte = response_data.proof_sig;
         let recovery_id = response_data.recovery_id[0];
 
-        let mut proof_sig = Signature::from_compact(&proof_sig_byte.clone())?;
+        let proof_sig = Signature::from_compact(&proof_sig_byte.clone())?;
 
 
         println!("{}", hex::encode(random_number_data.clone()));

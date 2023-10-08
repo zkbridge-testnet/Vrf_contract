@@ -3,18 +3,6 @@ pragma solidity ^0.8.19;
 
 import "./register.sol";
 
-contract Myecrecover {
-    constructor() {}
-    function myEcrecover(
-        bytes32 messageHash,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public pure returns (address) {
-        return ecrecover(messageHash, v, r, s);
-    }
-}
-
 contract Verify {
     Register public registerContract;
 
@@ -27,6 +15,7 @@ contract Verify {
     event LogBytes(bytes message);
     event Loguint8(uint8 message);
     event Logbytes32(bytes32 message);
+    mapping(bytes => bool) public usedHashes;
 
     function verify(
         address applicationAddress,
@@ -35,6 +24,10 @@ contract Verify {
         uint8 v,
         bytes32 expectedRandom
     ) public returns (bool) {
+        require (
+            !usedHashes[abi.encodePacked(messageHash, applicationAddress)],
+            "Hash already used"
+        );
         bytes memory registeredKey = registerContract.getPublicKey(
             applicationAddress
         );
@@ -46,6 +39,32 @@ contract Verify {
         bytes32 computedRandom = keccak256(signature);
         require(computedRandom == expectedRandom, "Invalid random number");
         emit RandomNumberRecorded(computedRandom);
+        usedHashes[abi.encodePacked(messageHash, applicationAddress)] = true;
+        return true;
+    }
+
+    function batchVerify(
+        address applicationAddress,
+        bytes32[] memory messageHashes,
+        bytes[] memory signatures,
+        uint8[] memory v,
+        bytes32[] memory expectedRandoms
+    ) public returns (bool) {
+        require(
+            messageHashes.length == signatures.length &&
+                signatures.length == v.length &&
+                v.length == expectedRandoms.length,
+            "Invalid input"
+        );
+        for (uint256 i = 0; i < messageHashes.length; i++) {
+            verify(
+                applicationAddress,
+                messageHashes[i],
+                signatures[i],
+                v[i],
+                expectedRandoms[i]
+            );
+        }
         return true;
     }
 
@@ -58,8 +77,6 @@ contract Verify {
             addr := mload(0)
         }
     }
-
-    Myecrecover public foo;
     
     function recoverSigner(
         bytes32 messageHash,
