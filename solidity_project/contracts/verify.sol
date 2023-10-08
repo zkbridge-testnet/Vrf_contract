@@ -4,24 +4,21 @@ pragma solidity ^0.8.19;
 import "./register.sol";
 
 contract Verify {
+    event RandomNumberRecorded(bytes32 randomNumber);
+    event Committeed(bytes32 messageHash, address applicationAddress);
+
     Register public registerContract;
+
+    mapping(bytes => bool) public committedHashes;
 
     constructor(address _registerAddress) {
         registerContract = Register(_registerAddress);
     }
-    event RandomNumberRecorded(bytes32 randomNumber);
-    event VRSOutput(uint8 v, bytes32 r, bytes32 s);
-    event Log(string message);
-    event LogBytes(bytes message);
-    event Loguint8(uint8 message);
-    event Logbytes32(bytes32 message);
-    event Committeed(bytes32 messageHash, address applicationAddress);
-    mapping(bytes => bool) public committedHashes;
 
     function commit(
         bytes32 messageHash
-    ) public returns (bool) {
-        require (
+    ) external returns (bool) {
+        require(
             !committedHashes[abi.encodePacked(messageHash, msg.sender)],
             "Hash already committed"
         );
@@ -34,6 +31,31 @@ contract Verify {
         return true;
     }
 
+    function batchVerify(
+        address applicationAddress,
+        bytes32[] memory messageHashes,
+        bytes[] memory signatures,
+        uint8[] memory v,
+        bytes32[] memory expectedRandoms
+    ) external returns (bool) {
+        require(
+            messageHashes.length == signatures.length &&
+            signatures.length == v.length &&
+            v.length == expectedRandoms.length,
+            "Invalid input"
+        );
+        for (uint256 i = 0; i < messageHashes.length; i++) {
+            verify(
+                applicationAddress,
+                messageHashes[i],
+                signatures[i],
+                v[i],
+                expectedRandoms[i]
+            );
+        }
+        return true;
+    }
+
     function verify(
         address applicationAddress,
         bytes32 messageHash,
@@ -41,7 +63,7 @@ contract Verify {
         uint8 v,
         bytes32 expectedRandom
     ) public returns (bool) {
-        require (
+        require(
             committedHashes[abi.encodePacked(messageHash, applicationAddress)],
             "Hash not committed"
         );
@@ -59,31 +81,6 @@ contract Verify {
         return true;
     }
 
-    function batchVerify(
-        address applicationAddress,
-        bytes32[] memory messageHashes,
-        bytes[] memory signatures,
-        uint8[] memory v,
-        bytes32[] memory expectedRandoms
-    ) public returns (bool) {
-        require(
-            messageHashes.length == signatures.length &&
-                signatures.length == v.length &&
-                v.length == expectedRandoms.length,
-            "Invalid input"
-        );
-        for (uint256 i = 0; i < messageHashes.length; i++) {
-            verify(
-                applicationAddress,
-                messageHashes[i],
-                signatures[i],
-                v[i],
-                expectedRandoms[i]
-            );
-        }
-        return true;
-    }
-
     function publicKeyToAddress(
         bytes memory publicKey
     ) internal pure returns (address addr) {
@@ -93,7 +90,7 @@ contract Verify {
             addr := mload(0)
         }
     }
-    
+
     function recoverSigner(
         bytes32 messageHash,
         bytes memory sig,
