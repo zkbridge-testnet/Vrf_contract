@@ -25,6 +25,10 @@ contract Verify {
             !committedHashes[abi.encodePacked(messageHash, msg.sender)],
             "Hash already committed"
         );
+        require(
+            registerContract.getPublicKey(msg.sender).length != 0,
+            "Application not registered"
+        );
         committedHashes[abi.encodePacked(messageHash, msg.sender)] = true;
         emit Committeed(messageHash, msg.sender);
         return true;
