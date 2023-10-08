@@ -19,15 +19,14 @@ contract Verify {
     mapping(bytes => bool) public committedHashes;
 
     function commit(
-        address applicationAddress,
         bytes32 messageHash
     ) public returns (bool) {
         require (
-            !committedHashes[abi.encodePacked(messageHash, applicationAddress)],
+            !committedHashes[abi.encodePacked(messageHash, msg.sender)],
             "Hash already committed"
         );
-        committedHashes[abi.encodePacked(messageHash, applicationAddress)] = true;
-        emit Committeed(messageHash, applicationAddress);
+        committedHashes[abi.encodePacked(messageHash, msg.sender)] = true;
+        emit Committeed(messageHash, msg.sender);
         return true;
     }
 
