@@ -26,7 +26,7 @@ contract Verify {
             "Hash already committed"
         );
         require(
-            registerContract.getPublicKey(msg.sender).length != 0,
+            registerContract.getVRFKey(msg.sender).length != 0,
             "Application not registered"
         );
         committedHashes[abi.encodePacked(messageHash, msg.sender)] = true;
@@ -45,7 +45,7 @@ contract Verify {
             committedHashes[abi.encodePacked(messageHash, applicationAddress)],
             "Hash not committed"
         );
-        bytes memory registeredKey = registerContract.getPublicKey(
+        bytes memory registeredKey = registerContract.getVRFKey(
             applicationAddress
         );
         address signer = recoverSigner(messageHash, signature, v);
