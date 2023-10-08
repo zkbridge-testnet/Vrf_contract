@@ -15,7 +15,19 @@ contract Verify {
     event LogBytes(bytes message);
     event Loguint8(uint8 message);
     event Logbytes32(bytes32 message);
-    mapping(bytes => bool) public usedHashes;
+    mapping(bytes => bool) public committedHashes;
+
+    function commit(
+        address applicationAddress,
+        bytes32 messageHash
+    ) public returns (bool) {
+        require (
+            !committedHashes[abi.encodePacked(messageHash, applicationAddress)],
+            "Hash already committed"
+        );
+        committedHashes[abi.encodePacked(messageHash, applicationAddress)] = true;
+        return true;
+    }
 
     function verify(
         address applicationAddress,
@@ -25,8 +37,8 @@ contract Verify {
         bytes32 expectedRandom
     ) public returns (bool) {
         require (
-            !usedHashes[abi.encodePacked(messageHash, applicationAddress)],
-            "Hash already used"
+            committedHashes[abi.encodePacked(messageHash, applicationAddress)],
+            "Hash not committed"
         );
         bytes memory registeredKey = registerContract.getPublicKey(
             applicationAddress
@@ -39,7 +51,6 @@ contract Verify {
         bytes32 computedRandom = keccak256(signature);
         require(computedRandom == expectedRandom, "Invalid random number");
         emit RandomNumberRecorded(computedRandom);
-        usedHashes[abi.encodePacked(messageHash, applicationAddress)] = true;
         return true;
     }
 
