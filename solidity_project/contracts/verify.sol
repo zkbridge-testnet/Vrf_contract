@@ -19,36 +19,36 @@ contract Verify {
     }
 
     function commit(
-        bytes32 RandomSeed
+        bytes32 randomSeed
     ) external returns (bool) {
         require(
-            !committedHashes[abi.encodePacked(RandomSeed, msg.sender)],
+            !committedHashes[abi.encodePacked(randomSeed, msg.sender)],
             "Hash already committed"
         );
         require(
             registerContract.getVRFKey(msg.sender).length != 0,
             "Application not registered"
         );
-        committedHashes[abi.encodePacked(RandomSeed, msg.sender)] = true;
-        emit Committeed(RandomSeed, msg.sender);
+        committedHashes[abi.encodePacked(randomSeed, msg.sender)] = true;
+        emit Committeed(randomSeed, msg.sender);
         return true;
     }
 
     function batchVerify(
         address applicationAddress,
-        bytes32[] memory RandomSeeds,
+        bytes32[] memory randomSeeds,
         bytes[] memory signatures,
         bytes32[] memory expectedRandoms
     ) external returns (bool) {
         require(
-            RandomSeeds.length == signatures.length &&
+            randomSeeds.length == signatures.length &&
             signatures.length == expectedRandoms.length,
             "Invalid input"
         );
-        for (uint256 i = 0; i < RandomSeeds.length; i++) {
+        for (uint256 i = 0; i < randomSeeds.length; i++) {
             verify(
                 applicationAddress,
-                RandomSeeds[i],
+                randomSeeds[i],
                 signatures[i],
                 expectedRandoms[i]
             );
