@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./Register.sol";
 
-contract Verify is Register{
+contract Verify is Register {
     using ECDSA for bytes32;
 
     event RandomNumberRecorded(bytes32 randomNumber);
@@ -12,9 +12,14 @@ contract Verify is Register{
 
     mapping(bytes => bool) public committedHashes;
 
-    function commit(
-        bytes32 randomSeed
-    ) external returns (bool) {
+    function batchCommit(bytes32[] memory randomSeeds) external{
+        require(randomSeeds.length > 0, "");
+        for (uint256 i = 0; i < randomSeeds.length; i++) {
+            commit(randomSeeds[i]);
+        }
+    }
+
+    function commit(bytes32 randomSeed) public {
         require(
             !committedHashes[abi.encodePacked(randomSeed, msg.sender)],
             "Hash already committed"
@@ -25,7 +30,6 @@ contract Verify is Register{
         );
         committedHashes[abi.encodePacked(randomSeed, msg.sender)] = true;
         emit Committeed(randomSeed, msg.sender);
-        return true;
     }
 
     function batchVerify(
