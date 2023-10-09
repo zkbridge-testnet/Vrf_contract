@@ -116,29 +116,6 @@ def verify(application_public_key, message_hash, signature, expected_random, rec
         logging.error("Transaction failed: %s", receipt['gasUsed'])
         return
 
-
-def gen_rand_verify(application_address):
-    # query contract to get public key
-    application_public_key = get_public_key(application_address)
-    # add 04 to the beginning of the public key
-    if application_public_key.startswith('0x'):
-        application_public_key = application_public_key[2:]
-    if len(application_public_key) == 128:
-        application_public_key = '04' + application_public_key
-    # invoke client to get random number
-    random_number_line = os.popen(vrfClient + ' getrand ' + application_public_key).read()
-    random_number_lines = random_number_line.split('\n')
-    print(random_number_lines)
-    random_number = random_number_lines[0]
-    proof_msg = random_number_lines[1]
-    proof_sig = random_number_lines[2]
-    recovery_id = random_number_lines[3]
-
-    # onchain
-    verify(application_address, proof_msg, proof_sig, random_number, recovery_id)
-
-    logging.info("Random number: %s", random_number)
-
 def gen_rand_with_msg_verify(application_address, message):
     # query contract to get public key
     application_public_key = get_public_key(application_address)
@@ -196,8 +173,6 @@ def main():
         get_public_key(args.address)
     elif args.command == 'verify':
         verify(args.application_public_key, args.message_hash, args.signature, args.expected_random)
-    elif args.command == 'generate_random_and_verify':
-        gen_rand_verify(args.application_deployer_address)
     elif args.command == 'generate_random_with_msg_and_verify':
         gen_rand_with_msg_verify(args.application_deployer_address, args.message)
     else:

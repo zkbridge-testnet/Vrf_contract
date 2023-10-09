@@ -8,7 +8,7 @@ contract Verify {
     using ECDSA for bytes32;
 
     event RandomNumberRecorded(bytes32 randomNumber);
-    event Committeed(bytes32 messageHash, address applicationAddress);
+    event Committeed(bytes32 RandomSeed, address applicationAddress);
 
     Register public registerContract;
 
@@ -19,36 +19,36 @@ contract Verify {
     }
 
     function commit(
-        bytes32 messageHash
+        bytes32 RandomSeed
     ) external returns (bool) {
         require(
-            !committedHashes[abi.encodePacked(messageHash, msg.sender)],
+            !committedHashes[abi.encodePacked(RandomSeed, msg.sender)],
             "Hash already committed"
         );
         require(
-            registerContract.getPublicKey(msg.sender).length != 0,
+            registerContract.getVRFKey(msg.sender).length != 0,
             "Application not registered"
         );
-        committedHashes[abi.encodePacked(messageHash, msg.sender)] = true;
-        emit Committeed(messageHash, msg.sender);
+        committedHashes[abi.encodePacked(RandomSeed, msg.sender)] = true;
+        emit Committeed(RandomSeed, msg.sender);
         return true;
     }
 
     function batchVerify(
         address applicationAddress,
-        bytes32[] memory messageHashes,
+        bytes32[] memory RandomSeeds,
         bytes[] memory signatures,
         bytes32[] memory expectedRandoms
     ) external returns (bool) {
         require(
-            messageHashes.length == signatures.length &&
+            RandomSeeds.length == signatures.length &&
             signatures.length == expectedRandoms.length,
             "Invalid input"
         );
-        for (uint256 i = 0; i < messageHashes.length; i++) {
+        for (uint256 i = 0; i < RandomSeeds.length; i++) {
             verify(
                 applicationAddress,
-                messageHashes[i],
+                RandomSeeds[i],
                 signatures[i],
                 expectedRandoms[i]
             );
@@ -66,7 +66,7 @@ contract Verify {
             committedHashes[abi.encodePacked(messageHash, applicationAddress)],
             "Hash not committed"
         );
-        bytes memory registeredKey = registerContract.getPublicKey(
+        bytes memory registeredKey = registerContract.getVRFKey(
             applicationAddress
         );
         require(
