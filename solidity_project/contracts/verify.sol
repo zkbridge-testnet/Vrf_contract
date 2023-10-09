@@ -42,7 +42,7 @@ contract Verify {
     ) external returns (bool) {
         require(
             messageHashes.length == signatures.length &&
-            signatures.length == expectedRandoms.length &&
+            signatures.length == expectedRandoms.length,
             "Invalid input"
         );
         for (uint256 i = 0; i < messageHashes.length; i++) {
