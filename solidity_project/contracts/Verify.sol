@@ -2,21 +2,15 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "./register.sol";
+import "./Register.sol";
 
-contract Verify {
+contract Verify is Register{
     using ECDSA for bytes32;
 
     event RandomNumberRecorded(bytes32 randomNumber);
     event Committeed(bytes32 RandomSeed, address applicationAddress);
 
-    Register public registerContract;
-
     mapping(bytes => bool) public committedHashes;
-
-    constructor(address _registerAddress) {
-        registerContract = Register(_registerAddress);
-    }
 
     function commit(
         bytes32 randomSeed
@@ -26,7 +20,7 @@ contract Verify {
             "Hash already committed"
         );
         require(
-            registerContract.getVRFKey(msg.sender).length != 0,
+            getVRFKey(msg.sender).length != 0,
             "Application not registered"
         );
         committedHashes[abi.encodePacked(randomSeed, msg.sender)] = true;
@@ -66,7 +60,7 @@ contract Verify {
             committedHashes[abi.encodePacked(messageHash, applicationAddress)],
             "Hash not committed"
         );
-        bytes memory registeredKey = registerContract.getVRFKey(
+        bytes memory registeredKey = getVRFKey(
             applicationAddress
         );
         require(
