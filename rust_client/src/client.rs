@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {{
     let args : Vec<String> = env::args().collect();
 
     // Connect to the gRPC server
-    let channel = Channel::from_static("http://vrf.zkbridge.com:50051")
+    let channel = Channel::from_static("http://34.27.65.206:50051")
         .connect()
         .await?;
 
